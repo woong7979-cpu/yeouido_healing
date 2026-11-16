@@ -1,0 +1,6 @@
+{
+  "headers": [
+    { "source": "/(music|models|videos|photos|tex|shots)/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }] }
+  ]
+}
