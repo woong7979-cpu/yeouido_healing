@@ -1651,7 +1651,8 @@ function updateNPCs(dt,t){const frozen=G.freeze>0;const dens=runnerDensity(G.h)*
 // ---------------- player ----------------
 const player={x:0,y:0,z:0,vx:0,vz:0,heading:0,ph:0,mode:'jog',auto:false,target:null,stretch:0,jumpY:0,jumpV:0,dist:0,runTime:0,loopAcc:0,lastLoop:-1,lastStep:0,boat:false,dance:false,p:null};
 const COLLIDERS=[];function hitCollider(x,z,r=.35){for(const c of COLLIDERS){if(c.r){if(Math.hypot(x-c.x,z-c.z)<c.r+r)return true;continue}const dx=x-c.x,dz=z-c.z,cs=Math.cos(c.yaw),sn=Math.sin(c.yaw);const lx=dx*cs-dz*sn,lz=dx*sn+dz*cs;if(Math.abs(lx)<c.hx+r&&Math.abs(lz)<c.hz+r)return true}return false}
-function walkable(x,z,refY){if(deckAt(x,z,refY))return true;if(COLLIDERS.length&&hitCollider(x,z))return false;const k=mIdx(x,z);if(k<0)return false;if(mBld[k]>127)return false;if(mWater[k]>127)return false;return mPark[k]>127}
+function sdPrisonOK(x,z){const P=D.prison_;if(!P)return false;const dx=x-P.gate[0],dz=z-P.gate[1];const s=dx*P.U[0]+dz*P.U[1],t=dx*P.V[0]+dz*P.V[1];return (s>0.6&&s<169&&Math.abs(t)<84)||(s>-14&&s<=0.6&&Math.abs(t)<8.4)}
+function walkable(x,z,refY){if(deckAt(x,z,refY))return true;if(COLLIDERS.length&&hitCollider(x,z))return false;if(sdPrisonOK(x,z))return true;const k=mIdx(x,z);if(k<0)return false;if(mBld[k]>127)return false;if(mWater[k]>127)return false;return mPark[k]>127}
 function groundY(x,z,refY){const d=deckAt(x,z,refY);const h=terrainH(x,z);return d?Math.max(d.h,h):Math.max(h,isWaterM(x,z)?WATER_Y:-10)}
 
 // ---------------- sound ----------------
@@ -2301,7 +2302,7 @@ function buildPrison(){const P_=D.prison_,G0=P_.gate;const a=Math.atan2(P_.U[0],
   // main gate: two brick gate towers + iron gate + lamps
   for(const s of[-1,1]){add(uvBox(4.2,7.6,4.2,3,4.5),brick,0,3.8,s*11);add(new THREE.BoxGeometry(4.8,.5,4.8),trim,0,7.8,s*11);const rf=add(new THREE.ConeGeometry(3.5,1.9,4,1),slate,0,8.95,s*11,Math.PI/4);col(0,s*11,2.3,2.3)
     const lp=new THREE.Mesh(new THREE.SphereGeometry(.35,12,10),new THREE.MeshStandardMaterial({color:0xfff1d0,emissive:0xffd79a,emissiveIntensity:.2}));lp.position.set(-s*8.6,5.6,-2.3);g.add(lp);sdLitMat(lp.material,1.8)}
-  for(let k=0;k<26;k++)add(new THREE.CylinderGeometry(.05,.05,4.0,6),mat(0x2b2d30,{metalness:.6,roughness:.4}),0,2.0,-8.6+k*.69);add(new THREE.BoxGeometry(.18,.25,17.4),mat(0x2b2d30,{metalness:.6}),0,3.9,0);
+  for(const sd of[-1,1])for(let k=0;k<13;k++)add(new THREE.CylinderGeometry(.05,.05,4.0,6),mat(0x2b2d30,{metalness:.6,roughness:.4}),.4+k*.66,2.0,sd*8.75);add(new THREE.BoxGeometry(.18,.25,17.4),mat(0x2b2d30,{metalness:.6}),0,3.9,0);
   const sign=new THREE.Mesh(new THREE.PlaneGeometry(6.4,.9),new THREE.MeshStandardMaterial({map:textTex(['서대문형무소역사관'],{w:768,h:108,bg:'#2a2622',fg:'#e9dcc0',font:'900 62px "Noto Sans KR",sans-serif'})}));sign.position.set(-18,3.0,-.42);sign.rotation.y=Math.PI;g.add(sign);
   // 보안과청사 (now the exhibition hall): 2 storeys, central entrance bay and small tower
   {const s0=26,L=56,Dp=14,H=10;add(uvBox(L,H,Dp,3.5,4.5),office,s0,H/2,0);add(new THREE.BoxGeometry(L+.6,.5,Dp+.6),trim,s0,H+.25,0);
